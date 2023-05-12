@@ -1,6 +1,13 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { Reflector } from 'three/addons/objects/Reflector.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { SSRPass } from 'three/addons/postprocessing/SSRPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { GammaCorrectionShader } from 'three/addons/shaders/GammaCorrectionShader.js';
+import { ReflectorForSSRPass } from 'three/addons/objects/ReflectorForSSRPass.js';
+// import DPlayer from 'dplayer';
+
 // 创建场景、相机和渲染器
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(
@@ -24,23 +31,33 @@ const groundMirror = new Reflector(groundGeometry, {
   clipBias: 0.003,
   textureWidth: window.innerWidth * window.devicePixelRatio,
   textureHeight: window.innerHeight * window.devicePixelRatio,
-  color: 0xb5b5b5
+  color: 0x888888,
+	useDepthTexture: true,
 });
-groundMirror.position.y = 0.5;
-groundMirror.rotateX(- Math.PI / 2);
+groundMirror.material.depthWrite = false;
+groundMirror.rotation.x = - Math.PI / 2;
+groundMirror.visible = false;
 scene.add(groundMirror);
 
+const selects = [];
 // 创建墙体
 const wallGeometry = new THREE.BoxGeometry(16, 9, 0.1);
 const wallMaterial = new THREE.MeshPhongMaterial({ color: 0xcccccc });
 
 // 墙体2为视频video
+// const video = new DPlayer({
+//   container: document.getElementById('dplayer'),
+//   video: {
+//       url: './benpao.mp4',
+//   },
+// });
 const video = document.getElementById("video");
 const texture = new THREE.VideoTexture(video);
 const material = new THREE.MeshBasicMaterial({ map: texture });
 const wall2 = new THREE.Mesh(wallGeometry, material);
 wall2.position.set(0, 0, 10);
 scene.add(wall2);
+selects.push(wall2);
 
 const wall3 = new THREE.Mesh(wallGeometry, wallMaterial);
 wall3.rotation.y = Math.PI / 2;
@@ -50,6 +67,28 @@ const wall4 = new THREE.Mesh(wallGeometry, wallMaterial);
 wall4.rotation.y = Math.PI / 2;
 wall4.position.set(10, 0, 0);
 scene.add(wall4);
+
+
+// composer
+
+const composer = new EffectComposer( renderer );
+const ssrPass = new SSRPass( {
+  renderer,
+  scene,
+  camera,
+  width: innerWidth,
+  height: innerHeight,
+  groundReflector: true,
+  selects: selects
+} );
+
+groundMirror.distanceAttenuation = ssrPass.distanceAttenuation;
+ssrPass.maxDistance = .1;
+groundMirror.maxDistance = ssrPass.maxDistance;
+
+composer.addPass( ssrPass );
+composer.addPass( new ShaderPass( GammaCorrectionShader ) );
+
 
 // 创建一个简单的桌子
 const tableGeometry = new THREE.BoxGeometry(2, 0.1, 1);
@@ -95,12 +134,13 @@ document.addEventListener("keydown", (event) => {
 // 渲染循环
 function animate() {
   requestAnimationFrame(animate);
+  composer.render();
   renderer.render(scene, camera);
 }
 animate();
 
 // 定位视颯后播支后臣
-video.addEventListener("loadeddata", () => {
-  console.log("play .... ")
-  video.play();
-});
+// video.addEventListener("loadeddata", () => {
+//   console.log("play .... ")
+//   video.play();
+// });
