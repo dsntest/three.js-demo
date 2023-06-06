@@ -37,12 +37,14 @@ scene.add(spotLight);
 
 // 创建地板
 const plane = new THREE.Mesh(
-  new THREE.PlaneGeometry(8, 8),
-  new THREE.MeshPhongMaterial({ color: 0x999999, specular: 0x101010 })
+  new THREE.PlaneGeometry(20, 20),
+  new THREE.MeshPhongMaterial({ color: 0x230023, specular: 0x101010 })
 );
 plane.rotation.x = - Math.PI / 2;
 plane.position.y = - 0.0001;
-// plane.receiveShadow = true;
+plane.position.set(0, -5, 0);
+
+plane.receiveShadow = true;
 scene.add(plane);
 
 const groundGeometry = new THREE.PlaneGeometry(1, 1);
@@ -58,30 +60,45 @@ groundMirror.rotation.x = - Math.PI / 2;
 groundMirror.visible = false;
 scene.add(groundMirror);
 
+
 const selects = [];
 // 创建墙体
 const wallGeometry = new THREE.BoxGeometry(16, 9, 0.1);
 const wallMaterial = new THREE.MeshPhongMaterial({ color: 0xcccccc });
 
 // 墙体2为视频video
-// const video = new DPlayer({
-//   container: document.getElementById('dplayer'),
-//   video: {
-//       url: './benpao.mp4',
-//   },
-// });
-const video = document.getElementById("video");
-const texture = new THREE.VideoTexture(video);
-const material = new THREE.MeshBasicMaterial({ map: texture });
-const wall2 = new THREE.Mesh(wallGeometry, material);
+
+const cam = document.createElement('video');
+const camTexture = new THREE.VideoTexture(cam);
+
+// 创建材质
+const camMaterial = new THREE.MeshBasicMaterial({ map: camTexture });
+
+// 创建网格
+const wall2 = new THREE.Mesh(wallGeometry, camMaterial);
 wall2.position.set(0, 0, 10);
 scene.add(wall2);
 selects.push(wall2);
 
-const wall3 = new THREE.Mesh(wallGeometry, wallMaterial);
+// 获取摄像头数据
+navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+.then(stream => {
+    cam.srcObject = stream;
+    cam.play();
+})
+.catch(error => {
+    console.error('Error accessing camera:', error);
+});
+
+
+const video = document.getElementById("video");
+const videoTexture = new THREE.VideoTexture(video);
+const videoMaterial = new THREE.MeshBasicMaterial({ map: videoTexture });
+const wall3 = new THREE.Mesh(wallGeometry, videoMaterial);
 wall3.rotation.y = Math.PI / 2;
 wall3.position.set(-10, 0, 0);
 scene.add(wall3);
+
 const wall4 = new THREE.Mesh(wallGeometry, wallMaterial);
 wall4.rotation.y = Math.PI / 2;
 wall4.position.set(10, 0, 0);
@@ -121,7 +138,7 @@ groundMirror.opacity = ssrPass.opacity;
 const tableGeometry = new THREE.BoxGeometry(2, 0.1, 1);
 const tableMaterial = new THREE.MeshPhongMaterial({ color: 0x994d00 });
 const table = new THREE.Mesh(tableGeometry, tableMaterial);
-table.position.set(0, 0.6, 0);
+table.position.set(0, -5, 0);
 scene.add(table);
 
 // 添加物品到桌子上
@@ -158,6 +175,7 @@ document.addEventListener("keydown", (event) => {
       break;
   }
 });
+
 // 渲染循环
 function animate() {
   requestAnimationFrame(animate);
@@ -166,11 +184,13 @@ function animate() {
 }
 animate();
 
+
 // 定位视颯后播支后臣
 video.addEventListener("loadeddata", () => {
   console.log("play .... ");
   video.play();
 });
+
 
 // 监听窗口大小变化
 window.addEventListener("resize", () => {
@@ -178,5 +198,5 @@ window.addEventListener("resize", () => {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
   composer.setSize(window.innerWidth, window.innerHeight);
-  ssrPass.resolution.set(window.innerWidth, window.innerHeight);
+  ssrPass.setSize(window.innerWidth, window.innerHeight);
 });
