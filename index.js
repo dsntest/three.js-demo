@@ -10,6 +10,9 @@ import { ReflectorForSSRPass } from 'three/addons/objects/ReflectorForSSRPass.js
 
 // 创建场景、相机和渲染器
 const scene = new THREE.Scene();
+// scene.background = new THREE.Color( 0x443333 );
+// scene.fog = new THREE.Fog( 0x443333, 1, 4 );
+
 const camera = new THREE.PerspectiveCamera(
   75, // 视角
   window.innerWidth / window.innerHeight, // 宽高比
@@ -25,14 +28,30 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 const light = new THREE.AmbientLight(0xffffff, 1);
 scene.add(light);
 
+const spotLight = new THREE.SpotLight();
+spotLight.angle = Math.PI / 16;
+spotLight.penumbra = 0.5;
+// spotLight.castShadow = true;
+spotLight.position.set(-1, 16, 1);
+scene.add(spotLight);
+
 // 创建地板
-const groundGeometry = new THREE.PlaneGeometry(16, 16);
-const groundMirror = new Reflector(groundGeometry, {
+const plane = new THREE.Mesh(
+  new THREE.PlaneGeometry(8, 8),
+  new THREE.MeshPhongMaterial({ color: 0x999999, specular: 0x101010 })
+);
+plane.rotation.x = - Math.PI / 2;
+plane.position.y = - 0.0001;
+// plane.receiveShadow = true;
+scene.add(plane);
+
+const groundGeometry = new THREE.PlaneGeometry(1, 1);
+const groundMirror = new ReflectorForSSRPass(groundGeometry, {
   clipBias: 0.003,
-  textureWidth: window.innerWidth * window.devicePixelRatio,
-  textureHeight: window.innerHeight * window.devicePixelRatio,
+  textureWidth: window.innerWidth,
+  textureHeight: window.innerHeight,
   color: 0x888888,
-	useDepthTexture: true,
+  useDepthTexture: true,
 });
 groundMirror.material.depthWrite = false;
 groundMirror.rotation.x = - Math.PI / 2;
@@ -71,8 +90,8 @@ scene.add(wall4);
 
 // composer
 
-const composer = new EffectComposer( renderer );
-const ssrPass = new SSRPass( {
+const composer = new EffectComposer(renderer);
+const ssrPass = new SSRPass({
   renderer,
   scene,
   camera,
@@ -80,14 +99,22 @@ const ssrPass = new SSRPass( {
   height: innerHeight,
   groundReflector: true,
   selects: selects
-} );
+});
 
+
+
+ssrPass.groundReflector = groundMirror;
+ssrPass.selects = selects;
+
+composer.addPass(ssrPass);
+composer.addPass(new ShaderPass(GammaCorrectionShader));
+
+groundMirror.fresnel = true;
 groundMirror.distanceAttenuation = ssrPass.distanceAttenuation;
 ssrPass.maxDistance = .1;
 groundMirror.maxDistance = ssrPass.maxDistance;
-
-composer.addPass( ssrPass );
-composer.addPass( new ShaderPass( GammaCorrectionShader ) );
+ssrPass.opacity = 1;
+groundMirror.opacity = ssrPass.opacity;
 
 
 // 创建一个简单的桌子
@@ -140,7 +167,16 @@ function animate() {
 animate();
 
 // 定位视颯后播支后臣
-// video.addEventListener("loadeddata", () => {
-//   console.log("play .... ")
-//   video.play();
-// });
+video.addEventListener("loadeddata", () => {
+  console.log("play .... ");
+  video.play();
+});
+
+// 监听窗口大小变化
+window.addEventListener("resize", () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  composer.setSize(window.innerWidth, window.innerHeight);
+  ssrPass.resolution.set(window.innerWidth, window.innerHeight);
+});
