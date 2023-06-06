@@ -16,10 +16,10 @@
 <body>
   <canvas id="canvas"></canvas>
   <!-- 创建video标签 -->
-  <video id="video" autoplay muted >
+  <!-- <video id="video" autoplay muted >
     <source src="./test.mp4" type="video/mp4">
     Your browser does not support the video tag.
-  </video>
+  </video> -->
   <div id="dplayer"></div>
 
   <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
@@ -31,6 +31,8 @@
         }
       }
   </script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/dplayer/dist/DPlayer.min.css">
+  <script src="https://cdn.bootcdn.net/ajax/libs/hls.js/1.4.0/hls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dplayer@1.27.1/dist/DPlayer.min.js"></script>
   <script type="module" src="./index.js"></script>
 </body>

@@ -66,8 +66,7 @@ const selects = [];
 const wallGeometry = new THREE.BoxGeometry(16, 9, 0.1);
 const wallMaterial = new THREE.MeshPhongMaterial({ color: 0xcccccc });
 
-// 墙体2为视频video
-
+// 墙体2为摄像头采集
 const cam = document.createElement('video');
 const camTexture = new THREE.VideoTexture(cam);
 
@@ -90,9 +89,17 @@ navigator.mediaDevices.getUserMedia({ video: true, audio: false })
     console.error('Error accessing camera:', error);
 });
 
+var dp = new DPlayer({
+  container: document.getElementById('dplayer'),
+  autoplay: true,
+  video: {
+      url: 'https://t-tehlsvodhls02.vhallyun.com/vhallyun/vhallrecord/lss_765d8027/20230525160317_02665f3f/record.m3u8?token=661AB630_NzQ4MDU4ODQ0XzY0N0YxQTkwX01ESTJOalZtTTJZX01USTNNekExX3ZvZA',
+      type: 'hls'
+  }
+});
 
-const video = document.getElementById("video");
-const videoTexture = new THREE.VideoTexture(video);
+// const video = document.getElementById("video");
+const videoTexture = new THREE.VideoTexture(dp.video);
 const videoMaterial = new THREE.MeshBasicMaterial({ map: videoTexture });
 const wall3 = new THREE.Mesh(wallGeometry, videoMaterial);
 wall3.rotation.y = Math.PI / 2;
@@ -185,11 +192,11 @@ function animate() {
 animate();
 
 
-// 定位视颯后播支后臣
-video.addEventListener("loadeddata", () => {
-  console.log("play .... ");
-  video.play();
-});
+// // 定位视颯后播支后臣
+// video.addEventListener("loadeddata", () => {
+//   console.log("play .... ");
+//   video.play();
+// });
 
 
 // 监听窗口大小变化
