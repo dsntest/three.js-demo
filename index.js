@@ -93,7 +93,7 @@ var dp = new DPlayer({
   container: document.getElementById('dplayer'),
   autoplay: true,
   video: {
-      url: 'https://t-tehlsvodhls02.vhallyun.com/vhallyun/vhallrecord/lss_765d8027/20230525160317_02665f3f/record.m3u8?token=661AB630_NzQ4MDU4ODQ0XzY0N0YxQTkwX01ESTJOalZtTTJZX01USTNNekExX3ZvZA',
+      url: 'https://t-tehlsvodhls02.vhallyun.com/vhallyun/vhallcoop/1fc76a3854713af17f60d277855e39ae/b0d7fbde/1fc76a3854713af17f60d277855e39ae_480p.m3u8?token=D6B384A5_Mzg3ODgzNzM0XzY0N0YxQ0IxX1lqQmtOMlppWkdVX01USTNNekExX3ZvZA',
       type: 'hls'
   }
 });
