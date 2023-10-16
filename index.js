@@ -47,6 +47,11 @@ plane.position.set(0, -5, 0);
 plane.receiveShadow = true;
 scene.add(plane);
 
+// const geoFloor = new THREE.BoxGeometry(20, 8, 20);
+// const matStdFloor = new THREE.MeshStandardMaterial({ color: 0xbcbcbc, roughness: 0.1, metalness: 0 });
+// const mshStdFloor = new THREE.Mesh(geoFloor, matStdFloor);
+// scene.add(mshStdFloor);
+
 const groundGeometry = new THREE.PlaneGeometry(1, 1);
 const groundMirror = new ReflectorForSSRPass(groundGeometry, {
   clipBias: 0.003,
@@ -64,7 +69,7 @@ scene.add(groundMirror);
 const selects = [];
 // 创建墙体
 const wallGeometry = new THREE.BoxGeometry(16, 9, 0.1);
-const wallMaterial = new THREE.MeshPhongMaterial({ color: 0xcccccc });
+const wallMaterial = new THREE.MeshPhongMaterial({ color: 0xcccccc, roughness: 0.1, metalness: 0  });
 
 // 墙体2为摄像头采集
 const cam = document.createElement('video');
@@ -89,11 +94,15 @@ navigator.mediaDevices.getUserMedia({ video: true, audio: false })
     console.error('Error accessing camera:', error);
 });
 
-var dp = new DPlayer({
+const dp = new DPlayer({
   container: document.getElementById('dplayer'),
   autoplay: true,
+  controlBar: true,
+  danmaku: {
+    hide: false
+  },
   video: {
-      url: 'https://t-tehlsvodhls02.vhallyun.com/vhallyun/vhallcoop/1fc76a3854713af17f60d277855e39ae/b0d7fbde/1fc76a3854713af17f60d277855e39ae_480p.m3u8?token=D6B384A5_Mzg3ODgzNzM0XzY0N0YxQ0IxX1lqQmtOMlppWkdVX01USTNNekExX3ZvZA',
+      url: 'https://t-tehlsvodhls02.vhallyun.com/vhallyun/vhallcoop/dbf78de09fa098fa018e9e17cd1e1581/ef53877c/dbf78de09fa098fa018e9e17cd1e1581.m3u8?token=2E2CB97A_NDMwNTc4NDYzXzY1MkQwMEM5X1pXWTFNemczTjJNX01USTNNekExX3ZvZA',
       type: 'hls'
   }
 });
