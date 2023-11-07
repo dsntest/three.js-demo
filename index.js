@@ -19,11 +19,11 @@ const camera = new THREE.PerspectiveCamera(
   0.1, // 近处平面距离
   1000 // 远处平面距离
 );
-const renderer = new THREE.WebGLRenderer({
-  canvas: document.getElementById("canvas"),
-});
+const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
+document.getElementById('threejs-container').appendChild(renderer.domElement);
 
+camera.position.z = 5;
 // 添加光源
 const light = new THREE.AmbientLight(0xffffff, 1);
 scene.add(light);
@@ -34,6 +34,14 @@ spotLight.penumbra = 0.5;
 // spotLight.castShadow = true;
 spotLight.position.set(-1, 16, 1);
 scene.add(spotLight);
+
+// Handle interactions with the custom DOM element
+// const customButton = document.getElementById('custom-button');
+// customButton.addEventListener('click', () => {
+//   // Perform an action when the custom button is clicked
+//   alert('Custom button clicked!');
+// });
+
 
 // 创建地板
 const plane = new THREE.Mesh(
@@ -69,7 +77,7 @@ scene.add(groundMirror);
 const selects = [];
 // 创建墙体
 const wallGeometry = new THREE.BoxGeometry(16, 9, 0.1);
-const wallMaterial = new THREE.MeshPhongMaterial({ color: 0xcccccc, roughness: 0.1, metalness: 0  });
+const wallMaterial = new THREE.MeshPhongMaterial({ color: 0xcccccc, roughness: 0.1, metalness: 0 });
 
 // 墙体2为摄像头采集
 const cam = document.createElement('video');
@@ -86,39 +94,144 @@ selects.push(wall2);
 
 // 获取摄像头数据
 navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-.then(stream => {
+  .then(stream => {
     cam.srcObject = stream;
     cam.play();
-})
-.catch(error => {
+  })
+  .catch(error => {
     console.error('Error accessing camera:', error);
-});
+  });
 
-const dp = new DPlayer({
-  container: document.getElementById('dplayer'),
-  autoplay: true,
-  controlBar: true,
-  danmaku: {
-    hide: false
-  },
-  video: {
-      url: 'https://t-tehlsvodhls02.vhallyun.com/vhallyun/vhallcoop/dbf78de09fa098fa018e9e17cd1e1581/ef53877c/dbf78de09fa098fa018e9e17cd1e1581.m3u8?token=2E2CB97A_NDMwNTc4NDYzXzY1MkQwMEM5X1pXWTFNemczTjJNX01USTNNekExX3ZvZA',
-      type: 'hls'
+// const dp = new DPlayer({
+//   container: document.getElementById('dplayer'),
+//   autoplay: true,
+//   controlBar: true,
+//   // danmaku: {
+//   //   hide: false
+//   // },
+//   video: {
+//       url: 'https://t-tehlsvodhls02.vhallyun.com/vhallyun/vhallcoop/dbf78de09fa098fa018e9e17cd1e1581/ef53877c/dbf78de09fa098fa018e9e17cd1e1581.m3u8?token=2E2CB97A_NDMwNTc4NDYzXzY1MkQwMEM5X1pXWTFNemczTjJNX01USTNNekExX3ZvZA',
+//       type: 'hls'
+//   }
+// });
+
+// // const video = document.getElementById("video");
+// const videoTexture = new THREE.VideoTexture(dp.video);
+// const videoMaterial = new THREE.MeshBasicMaterial({ map: videoTexture });
+// const wall3 = new THREE.Mesh(wallGeometry, videoMaterial);
+// wall3.rotation.y = Math.PI / 2;
+// wall3.position.set(-10, 0, 0);
+// scene.add(wall3);
+
+
+// 创建实例参数
+var opt = {
+  appId: "d317f559", // 互动应用ID，必填
+  inavId: "inav_e301abbf", // 互动房间ID，必填
+  roomId: "lss_772f6eda", // 如需开启旁路，必填。
+  accountId: "master_1414989", // 第三方用户ID，必填
+  token: "access:d317f559:master_1414989:6657872934caec1a", // access_token，必填
+  mode: VhallRTC.MODE_RTC, //应用场景模式，选填，可选值参考下文【应用场景类型】。支持版本：2.3.1及以上。
+  role: VhallRTC.ROLE_HOST,//用户角色，选填，可选值参考下文【互动参会角色】。当mode为rtc模式时，不需要配置role。支持版本：2.3.1及以上。
+  attributes: '', // String 类型
+  autoStartBroadcast: false, //是否开启自动旁路 Boolean 类型   默认false  支持版本V2.3.5及以上
+  broadcastConfig: {},// 自动旁路   开启旁路直播方法所需参数  autoStartBroadcast为true时，必填 支持版本V2.3.5及以上
+  socketTimeout: 2000 // ws超时时间单位ms，选填 支持版本V3.0.1及以上
+};
+//互动实例
+var vhallrtc;
+
+// 成功回调
+var success = function (event) {
+  // 互动实例
+  vhallrtc = event.vhallrtc;
+  // 房间当前的远端流列表，此时应开始逐个订阅远端流
+  var currentStreams = event.currentStreams;
+  var docStreams = event.docStreams;
+  for (let i = 0; i < currentStreams.length; i++) {
+    const { streamId, accountId } = currentStreams[i];
+    subscribe(streamId, "remote_player");
   }
-});
+  /*
+  currentStreams数据格式：
+  [
+      {
+          streamId, // 远端流ID
+          accountId, // 远端用户ID
+        streamType, // 流类型  0：纯音频， 1：单视频， 2：音视频， 3：屏幕共享
+        attributes, // 该流的自定义信息
+      }
+  ]
+  */
+  //docStreams为文档流对象,在V2.4.1中添加该属性
+  var broadCast = event.broadCast;
+  // 开启自动旁路结果
+  // 监听远端流添加事件
+  vhallrtc.on(VhallRTC.EVENT_REMOTESTREAM_ADD, function (event) {
+    console.log('远端流ID: ', event.data.streamId);
 
-// const video = document.getElementById("video");
-const videoTexture = new THREE.VideoTexture(dp.video);
-const videoMaterial = new THREE.MeshBasicMaterial({ map: videoTexture });
-const wall3 = new THREE.Mesh(wallGeometry, videoMaterial);
-wall3.rotation.y = Math.PI / 2;
-wall3.position.set(-10, 0, 0);
-scene.add(wall3);
+    // 此时可开始订阅远端流，参考下面代码
+   
+  });
+};
 
-const wall4 = new THREE.Mesh(wallGeometry, wallMaterial);
-wall4.rotation.y = Math.PI / 2;
-wall4.position.set(10, 0, 0);
-scene.add(wall4);
+// 失败回调
+var failure = function (event) {
+  console.log(event); // object 类型，{ code: 错误码, message: "", data: {} }
+};
+
+// 创建实例
+VhallRTC.createInstance(opt, success, failure);
+
+
+function subscribe(streamId, videoNode) {
+  // 传入参数
+  var opt = {
+    streamId: streamId, // 远端流ID，必填
+    videoNode: videoNode,     // 页面显示的容器ID， 必填
+    mute: {              // 选填，订阅成功后立即mute远端流
+      audio: false,    // 是否关闭音频，默认false
+      video: false     // 是否关闭视频，默认false
+    },
+    dual: 1, // 选填，双流订阅选项， 0为小流， 1为大流（默认）。
+    autoplay: true, // 自动播放 V2.3.7及以上生效
+  };
+  // 成功回调
+  var success = function (res) {
+  };
+  // 失败回调
+  var failure = function (event) {
+    console.log(event); // object 类型， { code:错误码, message:"", data:{} }
+  };
+  // 订阅播放远端流
+  vhallrtc.subscribe(opt, success, failure);
+
+  // 另已支持Promise写法
+  vhallrtc.subscribe(opt).then((data) => {
+    console.log('订阅并播放远端流成功，流ID: ', data.streamId);
+    const video = document.getElementById("stream_video"+data.streamId);
+    const videoTexture2 = new THREE.VideoTexture(video);
+    const videoMaterial2 = new THREE.MeshBasicMaterial({ map: videoTexture2 });
+    const wall4 = new THREE.Mesh(wallGeometry, videoMaterial2);
+    wall4.rotation.y = Math.PI / 2;
+    wall4.position.set(10, 0, 0);
+    scene.add(wall4);
+  }).catch((errInfo) => {
+    console.log('订阅并播放远端流失败', errInfo);
+    /*
+        相关错误描述信息： V2.3.7版本及以上
+        already-set: 收到后提示重复订阅
+        ice-failed: 收到后重新推流/订阅
+        timeout: 收到后重新订阅
+    */
+  });
+}
+
+
+// const wall4 = new THREE.Mesh(wallGeometry, wallMaterial);
+// wall4.rotation.y = Math.PI / 2;
+// wall4.position.set(10, 0, 0);
+// scene.add(wall4);
 
 
 // composer
@@ -199,14 +312,6 @@ function animate() {
   renderer.render(scene, camera);
 }
 animate();
-
-
-// // 定位视颯后播支后臣
-// video.addEventListener("loadeddata", () => {
-//   console.log("play .... ");
-//   video.play();
-// });
-
 
 // 监听窗口大小变化
 window.addEventListener("resize", () => {

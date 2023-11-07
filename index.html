@@ -5,22 +5,44 @@
   <meta charset="UTF-8" />
   <title>Three.js Video Demo</title>
   <style>
-    body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
+    .vhallrtc-remote-item {
+      width: 165px;
+      height: 120px;
+      margin: 0 8px;
+      position: relative;
+      background: #000;
+    }
+
+    /* Define some CSS styles */
+    #threejs-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    #custom-button {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      padding: 10px;
+      background-color: #0077FF;
+      color: #FFF;
+      cursor: pointer;
     }
   </style>
+
 </head>
 
 <body>
-  <canvas id="canvas"></canvas>
+  <div id="threejs-container"></div>
   <!-- 创建video标签 -->
   <!-- <video id="video" autoplay muted >
     <source src="./test.mp4" type="video/mp4">
     Your browser does not support the video tag.
   </video> -->
-  <div id="dplayer"></div>
+  <!-- <div id="dplayer"></div> -->
+  <!-- Create a custom DOM element -->
+  <div id="remote_player"></div>
 
   <script async src="https://cdn.jsdelivr.net/npm/es-module-shims@1.8.0/dist/es-module-shims.min.js"></script>
   <script type="importmap">
@@ -34,6 +56,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/dplayer/dist/DPlayer.min.css">
   <script src="https://cdn.bootcdn.net/ajax/libs/hls.js/1.4.0/hls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dplayer@1.27.1/dist/DPlayer.min.js"></script>
+  <script
+    src="https://test01-static.vhallyun.com//jssdk/vhall-jssdk-interaction/latest/vhall-jssdk-interaction-hybrid-3.2.2.js"></script>
   <script type="module" src="./index.js"></script>
 </body>
 

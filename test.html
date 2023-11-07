@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>绿幕抠像</title>
+  <style>
+    video {
+      display: none;
+    }
+
+    canvas {
+      border: 1px solid black;
+    }
+  </style>
+</head>
+
+<body>
+  <video id="video" width="1280" height="720"></video>
+  <canvas id="canvas" width="1280" height="720"></canvas>
+
+  <script>
+    // 获取视频流
+    const video = document.getElementById('video');
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then((stream) => {
+        video.srcObject = stream;
+        video.play();
+        processVideo();
+      })
+      .catch((error) => {
+        console.error('获取摄像头视频流失败：', error);
+      });
+    const backgroundImage = new Image();
+    backgroundImage.src = './test.jpeg';
+    
+    function processVideo() {
+      const videoElement = document.getElementById('video');
+      const canvas = document.getElementById('canvas');
+      const context = canvas.getContext('2d');
+
+      // 在画布上绘制视频帧
+      context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+      // 获取像素数据
+      const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+
+      const chromaKeyColor = { r: 60, g: 162, b: 116 }; // 这里假设绿色是绿幕颜色 60, 162, 116
+      // for (let i = 0; i < foregroundImageData.data.length; i += 4) {
+      //   const r = foregroundImageData.data[i];
+      //   const g = foregroundImageData.data[i + 1];
+      //   const b = foregroundImageData.data[i + 2];
+
+      //   if (r >= chromaKeyColor.r - 20 && r <= chromaKeyColor.r + 20 &&
+      //     g >= chromaKeyColor.g - 20 && g <= chromaKeyColor.g + 20 &&
+      //     b >= chromaKeyColor.b - 20 && b <= chromaKeyColor.b + 20) {
+      //     foregroundImageData.data[i + 3] = 0; // 将绿幕颜色替换为透明
+      //   }
+      // }
+      // 抠像处理
+      const range = 45;
+      for (let i = 0; i < data.length; i += 4) {
+        const red = data[i];
+        const green = data[i + 1];
+        const blue = data[i + 2];
+
+        // 判断是否属于绿幕区域（例：将绿色范围设为85到255之间的值）
+        if (red >= chromaKeyColor.r - range && red <= chromaKeyColor.r + range &&
+          green >= chromaKeyColor.g - range && green <= chromaKeyColor.g + range &&
+          blue >= chromaKeyColor.b - range && blue <= chromaKeyColor.b + range) {
+          data[i + 3] = 0; // 将绿幕颜色替换为透明
+        }
+      }
+
+      
+      context.putImageData(imageData, 0, 0);
+
+      // 重复处理下一帧视频
+      requestAnimationFrame(processVideo);
+    }
+  </script>
+</body>
+
+</html>
