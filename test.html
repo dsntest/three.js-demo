@@ -10,6 +10,8 @@
 </head>
 <body>
   <div id="container"></div>
+  <img id="bg" src="test.jpg" style="display:none;">
+
   <script>
     const videoWidth = 1280;
     const videoHeight = 720;
@@ -52,6 +54,7 @@
       side: THREE.DoubleSide
     });
 
+
     const videoElement = document.createElement('video');
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       navigator.mediaDevices
@@ -69,12 +72,23 @@
     const plane = new THREE.Mesh(planeGeometry, chromakeyMaterial);
     scene.add(plane);
 
+    
+    const bgTexture = new THREE.TextureLoader().load( "test.jpg" ); // 背景图片路径
+    bgTexture.minFilter = THREE.LinearFilter;
+    const bgMaterial = new THREE.MeshBasicMaterial( { map: bgTexture } );
+
+    const bgPlane = new THREE.Mesh(planeGeometry, bgMaterial);
+    bgPlane.position.z = -1;
+    scene.add(bgPlane);
+
     camera.position.z = 1;
 
     function animate() {
       requestAnimationFrame(animate);
       if (videoElement.readyState === videoElement.HAVE_ENOUGH_DATA) {
         videoTexture.needsUpdate = true;
+        // 更新背景图像的纹理
+        bgTexture.needsUpdate = true;
       }
       renderer.render(scene, camera);
     }
