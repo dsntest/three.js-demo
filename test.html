@@ -1,13 +1,21 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>绿幕扣除</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
   <style>
-    body { margin: 0; }
-    canvas { width: 100%; height: 100% }
+    body {
+      margin: 0;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%
+    }
   </style>
 </head>
+
 <body>
   <div id="container"></div>
   <img id="bg" src="test.jpg" style="display:none;">
@@ -25,9 +33,9 @@
 
     const chromakeyMaterial = new THREE.ShaderMaterial({
       uniforms: {
-        texture: {type: "t", value: null},
-        chromaKey: {type: "c", value: new THREE.Color(0x3ca274)},
-        range: {type: "f", value: 0.2 }
+        texture: { type: "t", value: null },
+        chromaKey: { type: "c", value: new THREE.Color(0x3ca274) },
+        range: { type: "f", value: 0.2 }
       },
       vertexShader: `
           varying vec2 vUv;
@@ -58,8 +66,8 @@
     const videoElement = document.createElement('video');
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       navigator.mediaDevices
-        .getUserMedia({ video: true })
-        .then(function(stream) {
+        .getUserMedia({ video: true, audio: true })
+        .then(function (stream) {
           videoElement.srcObject = stream;
           videoElement.play();
         });
@@ -72,10 +80,10 @@
     const plane = new THREE.Mesh(planeGeometry, chromakeyMaterial);
     scene.add(plane);
 
-    
-    const bgTexture = new THREE.TextureLoader().load( "test.jpg" ); // 背景图片路径
+
+    const bgTexture = new THREE.TextureLoader().load("test.jpg"); // 背景图片路径
     bgTexture.minFilter = THREE.LinearFilter;
-    const bgMaterial = new THREE.MeshBasicMaterial( { map: bgTexture } );
+    const bgMaterial = new THREE.MeshBasicMaterial({ map: bgTexture });
 
     const bgPlane = new THREE.Mesh(planeGeometry, bgMaterial);
     bgPlane.position.z = -1;
@@ -96,4 +104,5 @@
     animate();
   </script>
 </body>
+
 </html>
