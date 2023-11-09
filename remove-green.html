@@ -4,9 +4,12 @@
 <head>
   <title>绿幕扣除</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/110/three.min.js"></script>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/three.interaction@0.2.3/build/three.interaction.min.js"></script> -->
+
   <style>
     body {
       margin: 0;
+      overflow: hidden; /* 防止页面滚动 */
     }
 
     canvas {
@@ -96,6 +99,34 @@
     scene.add(bgPlane);
 
     camera.position.z = 1;
+
+    let isDragging = false;
+    let lastMouseX, lastMouseY;
+
+    // 监听鼠标按下事件
+    renderer.domElement.addEventListener('mousedown', (event) => {
+      isDragging = true;
+      lastMouseX = event.clientX;
+      lastMouseY = event.clientY;
+    });
+
+    // 监听鼠标移动事件
+    renderer.domElement.addEventListener('mousemove', (event) => {
+      if (isDragging) {
+        const deltaX = event.clientX - lastMouseX;
+        const deltaY = event.clientY - lastMouseY;
+
+        plane.position.x += deltaX;
+        plane.position.y -= deltaY; // 注意坐标系差异
+        lastMouseX = event.clientX;
+        lastMouseY = event.clientY;
+      }
+    });
+
+    // 监听鼠标释放事件
+    renderer.domElement.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
 
     function animate() {
       requestAnimationFrame(animate);
