@@ -18,7 +18,12 @@
 
 <body>
   <div id="container"></div>
-  <img id="bg" src="test.jpg" style="display:none;">
+  <!-- <img id="bg" src="test.jpg" style="display:none;"> -->
+  <video id="bg-video" autoplay loop style="display:none;">
+    <source src="test.mp4" type="video/mp4">
+    <!-- 添加其他视频格式的源（如WebM、Ogg）以提供更好的兼容性 -->
+  </video>
+
 
   <script>
     const videoWidth = 1280;
@@ -80,8 +85,9 @@
     const plane = new THREE.Mesh(planeGeometry, chromakeyMaterial);
     scene.add(plane);
 
-
-    const bgTexture = new THREE.TextureLoader().load("test.jpg"); // 背景图片路径
+    const bgVideo = document.getElementById('bg-video');
+    const bgTexture = new THREE.VideoTexture(bgVideo); // 背景视频
+    // const bgTexture = new THREE.TextureLoader().load("test.jpg"); // 背景图片路径
     bgTexture.minFilter = THREE.LinearFilter;
     const bgMaterial = new THREE.MeshBasicMaterial({ map: bgTexture });
 
